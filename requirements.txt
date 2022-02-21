@@ -1,0 +1,2 @@
+Flask-SocketIO==5.1
+eventlet==0.33

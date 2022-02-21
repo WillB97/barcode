@@ -1,0 +1,82 @@
+<html>
+    <head>
+        <title>Scanner - Barcode</title>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            var socket;
+            var roomId = undefined;
+            var lastResult = 0;
+
+            $(document).ready(function(){
+                socket = io.connect();
+
+                socket.on("disconnect", function() {
+                    roomId = undefined;
+                    $('#roomAddress').html("<h2>Enter Receiver ID</h2>");
+                    socket = io.connect();
+                });
+
+                $('#manual').keypress(function(e) {
+                    var code = e.keyCode || e.which;
+                    if (code == 13) {
+                        text = $('#manual').val();
+                        send_barcode(text);
+                        $('#manual').val('');
+                    }
+                });
+
+                function onScanSuccess(decodedText, decodedResult) {
+                    if (decodedText !== lastResult) {
+                        lastResult = decodedText;
+
+                        send_barcode(decodedText);
+                        $('#lastScanCode').text(`Last Scanned ${decodedText}`)
+                        console.log(`Code scanned = ${decodedText}`, decodedResult);
+                    }
+                }
+                var html5QrcodeScanner = new Html5QrcodeScanner(
+                    "qr-reader", { fps: 10, qrbox: 250 });
+                html5QrcodeScanner.render(onScanSuccess);
+            });
+            function leave_room() {
+                socket.disconnect();
+                // go back to the selection page
+                window.location.href = "{{ url_for('index') }}";
+            }
+            function send_barcode(barcode) {
+                if (roomId === undefined) {
+                    roomId = barcode;
+                    $('#roomAddress').html("<b>Connected to: " + roomId + "</b>");
+                    socket.emit('enter', {type: 'scanner', room: roomId});
+                } else {
+                    socket.emit('scan', {barcode: barcode});
+                }
+            }
+            function new_room() {
+                roomId = undefined;
+                $('#roomAddress').html("<h2>Enter Receiver ID</h2>");
+                lastResult = 0;
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Scanner</h1>
+        <div id="roomAddress">
+            <h2>Enter Receiver ID</h2>
+        </div>
+        <div id="qr-reader" style="width: 600px"></div>
+        <div id="lastScanCode"></div>
+        <div>
+            <b>Manual Entry: </b>
+            <input id="manual" size="20" placeholder="Enter barcode here">
+        </div>
+        <div>
+            <a href="#" onclick="leave_room();">Start Again</a>
+        </div>
+        <div>
+            <a href="#" onclick="new_room();">Connect to new receiver</a>
+        </div>
+    </body>
+</html>

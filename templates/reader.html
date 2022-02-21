@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title>Receiver - Barcode</title>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+        <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            var socket;
+            $(document).ready(function(){
+                socket = io.connect();
+                socket.emit('enter', {type: 'receiver'});
+
+                socket.on("disconnect", function() {
+                    $('#roomAddress').html("");
+                    socket = io.connect();
+                });
+                socket.on('enter', function(data) {
+                    $('#roomAddress').html("<b>Join Session: " + data.room + "</b><div id='qrcode'></div>");
+                    new QRCode(document.getElementById("qrcode"), data.room);
+                });
+                socket.on('devices', function(data) {
+                    if (data.connected) {
+                        console.log("New device connected");
+                    } else {
+                        console.log("A device disconnected");
+                    }
+                    // TODO display popup about device joined/left
+                });
+                socket.on('barcode', function(data) {
+                    $('#barcodes').val($('#barcodes').val() + data.barcode + '\n');
+                    $('#barcodes').scrollTop($('#barcodes')[0].scrollHeight);
+                });
+                $('#manual').keypress(function(e) {
+                    var code = e.keyCode || e.which;
+                    if (code == 13) {
+                        text = $('#manual').val();
+                        $('#barcodes').val($('#barcodes').val() + text + '\n');
+                        $('#manual').val('');
+                    }
+                });
+            });
+            function leave_room() {
+                socket.emit('leave', {}, function() {
+                    socket.disconnect();
+
+                    // go back to the selection page
+                    window.location.href = "{{ url_for('index') }}";
+                });
+            }
+            function clear_barcodes() {
+                $('#barcodes').val('');
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Barcode Receiver</h1>
+        <div>
+            <textarea id="barcodes" disabled cols="80" rows="20"></textarea>
+        </div><br>
+        <div>
+            <b>Manual Entry: </b>
+            <input id="manual" size="20" placeholder="Enter barcode here">
+        </div>
+        <div id="roomAddress">
+        </div>
+        <div>
+            <a href="#" onclick="leave_room();">Start Again</a>
+        </div>
+        <div>
+            <a href="#" onclick="clear_barcodes();">Clear</a>
+        </div>
+    </body>
+</html>
