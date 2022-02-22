@@ -33,7 +33,7 @@ def run_receiver(url, insecure=False):
         if message.get('room') is not None:
             print(f"Room ID: {message['room']}", file=sys.stderr)
             qrcode = pyqrcode.create(message['room'])
-            print(qrcode.terminal(quiet_zone=1))
+            print(qrcode.terminal(quiet_zone=1), file=sys.stderr)
 
     sio.connect(url)
     sio.emit('enter', {'type': 'receiver'})
