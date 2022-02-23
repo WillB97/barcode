@@ -22,7 +22,7 @@ def load_config():
 CONFIG = load_config()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = CONFIG['SECRET_KEY']
-socketio = SocketIO(app, cors_allowed_origins='http://localhost:5000')
+socketio = SocketIO(app)
 
 # Alpha-numeric with easily confused characters removed
 CHARSET = "0123456789" + "ABCDEFGH" + "JKLMN" + "PQR" + "TUVWXY"
