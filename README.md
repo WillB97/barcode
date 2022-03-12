@@ -13,4 +13,16 @@ Requires Python 3.8+.
 pip install -r requirements.txt
 ```
 
+To generate a self-signed cert use:
+```bash
+openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
+```
+and select default options.
 
+## Deployment
+
+This server uses eventlet for its async workers.
+Look at [Flask-SocketIO](https://flask-socketio.readthedocs.io/en/latest/deployment.html#gunicorn-web-server) for the command needed to run this using Gunicorn.
+Note, even though this only uses one worker it can support several clients.
+
+When putting this behind nginx the required options can be found on the [Flask-SocketIO docs](https://flask-socketio.readthedocs.io/en/latest/deployment.html#using-nginx-as-a-websocket-reverse-proxy).
