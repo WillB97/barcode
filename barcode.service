@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve barcode
+After=network.target
+
+[Service]
+Group=www-data
+WorkingDirectory=/srv/barcode/
+ExecStart=/usr/local/bin/gunicorn --worker-class eventlet -w 1 server:app -b 0.0.0.0:5000
+Restart=on-failure
+RestartSec=20s
+
+[Install]
+WantedBy=multi-user.target
