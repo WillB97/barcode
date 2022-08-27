@@ -26,3 +26,17 @@ Look at [Flask-SocketIO](https://flask-socketio.readthedocs.io/en/latest/deploym
 Note, even though this only uses one worker it can support several clients.
 
 When putting this behind nginx the required options can be found on the [Flask-SocketIO docs](https://flask-socketio.readthedocs.io/en/latest/deployment.html#using-nginx-as-a-websocket-reverse-proxy).
+
+```shell
+apt update && apt upgrade
+apt install python3-pip
+cd /srv/
+git clone https://github.com/WillB97/barcode.git
+cd barcode/
+pip install -U pip wheel
+pip install -r requirements.txt
+pip install -r requirements-prod.txt
+cp barcode.service /etc/systemd/system/barcode.service
+systemctl daemon-reload
+systemctl enable --now barcode.service
+```
