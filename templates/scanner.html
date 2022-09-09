@@ -16,8 +16,7 @@
                 socket = io.connect();
 
                 socket.on("disconnect", function() {
-                    roomId = undefined;
-                    $('#roomAddress').html("<h2>Enter Receiver ID</h2>");
+                    new_room();
                     socket = io.connect();
                 });
 
@@ -33,6 +32,7 @@
                 function onScanSuccess(decodedText, decodedResult) {
                     if (decodedText !== lastResult) {
                         lastResult = decodedText;
+                        $('#scanBeep')[0].play();
 
                         send_barcode(decodedText);
                         $('#lastScanCode').text(`Last Scanned ${decodedText}`)
@@ -52,34 +52,52 @@
                 if (roomId === undefined) {
                     roomId = barcode;
                     $('#roomAddress').html("<b>Connected to: " + roomId + "</b>");
+                    $('#manual').attr('placeholder', "Enter barcode here");
                     socket.emit('enter', {type: 'scanner', room: roomId});
+                } else if (roomId === 0) {
+                    $('#alerts .alert').alert('close');
+                    $('#alerts').append('<div class="alert alert-success alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>Scanned: <b>' + barcode + '</b></div>');
                 } else {
+                    $('#alerts .alert').alert('close');
+                    $('#alerts').append('<div class="alert alert-success alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>Scanned: <b>' + barcode + '</b></div>');
                     socket.emit('scan', {barcode: barcode});
                 }
             }
             function new_room() {
                 roomId = undefined;
-                $('#roomAddress').html("<h2>Enter Receiver ID</h2>");
+                $('#roomAddress').html('<div class="alert alert-warning">Device disconnected</div><h2>Enter Receiver ID</h2>');
+                $('#manual').attr('placeholder', "Enter receiver ID");
                 lastResult = 0;
             }
+            function standalone_mode() {
+                roomId = 0;
+                $('#roomAddress').html("<b>Standalone Mode</b>");
+                $('#manual').attr('placeholder', "Enter barcode here");
+            }
         </script>
+        <audio id="scanBeep">
+            <source src="https://www.soundjay.com/buttons/button-1.mp3" type="audio/mpeg">
+        </audio>
     </head>
     <body>
         <h1>Scanner</h1>
         <div id="roomAddress">
+            <div class="alert alert-warning">Device disconnected</div>
             <h2>Enter Receiver ID</h2>
         </div>
         <div class="container-fluid">
             <div id="qr-reader"></div>
-        </div>
+        </div><br>
+        <div id="alerts"></div>
         <div id="lastScanCode"></div>
         <div>
             <b>Manual Entry: </b>
-            <input id="manual" size="20" placeholder="Enter barcode here">
+            <input id="manual" size="20" placeholder="Enter receiver ID">
         </div>
         <div class="pt-2">
             <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
             <a class="btn btn-warning btn-lg btn-block" href="#" onclick="new_room();">Connect to new receiver</a>
+            <a class="btn btn-secondary btn-lg btn-block" href="#" onclick="standalone_mode();">Standalone Mode</a>
         </div>
     </body>
 </html>
