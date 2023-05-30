@@ -131,4 +131,4 @@ def sanitise_barcode(barcode):
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', debug=True, keyfile=CONFIG['key'], certfile=CONFIG['cert'])
+    socketio.run(app, host='0.0.0.0', debug=True, ssl_context=(CONFIG['cert'], CONFIG['key']))

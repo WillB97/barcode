@@ -20,7 +20,7 @@
                     socket = io.connect();
                 });
                 socket.on('enter', function(data) {
-                    $('#roomAddress').html("<b>Join Session: " + data.room + "</b><div id='qrcode'></div>");
+                    $('#roomAddress').html("<b>Join Session: " + data.room + "</b><div id='qrcode' class='m-2'></div>");
                     new QRCode(document.getElementById("qrcode"), data.room);
                 });
                 socket.on('devices', function(data) {

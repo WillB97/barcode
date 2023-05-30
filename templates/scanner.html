@@ -6,7 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-        <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+        <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
         <script type="text/javascript" charset="utf-8">
             var socket;
             var roomId = undefined;
@@ -40,7 +40,15 @@
                     }
                 }
                 var html5QrcodeScanner = new Html5QrcodeScanner(
-                    "qr-reader", { fps: 10, qrbox: $("#qr-reader").width() * 0.8, aspectRatio: 1});
+                    "qr-reader", {
+                        fps: 10,
+                        qrbox: $("#qr-reader").width() * 0.8,
+                        aspectRatio: 1,
+                        rememberLastUsedCamera: !0,
+                        showTorchButtonIfSupported: !0,
+                        showZoomSliderIfSupported: !0,
+                        defaultZoomValueIfSupported: 1.5,
+                    });
                 html5QrcodeScanner.render(onScanSuccess);
             });
             function leave_room() {
