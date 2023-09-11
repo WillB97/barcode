@@ -124,22 +124,22 @@
         </div>
         <div class="container-fluid">
             <div id="qr-reader" class="mb-3"></div>
-        </div><br>
-        <div id="alerts"></div>
-        <div id="lastScanCode"></div>
-        <div>
-            <b id="manual_label">Manual Entry: </b>
-            <input id="manual" size="20" placeholder="Enter barcode here">
-        </div>
-        <div class="pt-2 mb-3">
-            <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
-            <a class="btn btn-primary btn-lg btn-block" id="new_recv_btn" href="#" onclick="new_room();">Connect to receiver</a>
-            <a class="btn btn-warning btn-lg btn-block" id="disconnect_btn" href="#" onclick="new_room();" hidden>Disconnect from receiver</a>
-            <a class="btn btn-secondary btn-lg btn-block" id="standalone_btn" href="#" onclick="setup_room(0);" hidden>Standalone Mode</a>
-            <a class="btn btn-warning btn-lg btn-block" href="#" onclick="barcodes = [];format_barcodes();">Clear</a>
-        </div>
-        <div class="mb-3">
-            <textarea id="barcodes" readonly cols="40" rows="20"></textarea>
+            <div id="alerts"></div>
+            <div id="lastScanCode"></div>
+            <div>
+                <b id="manual_label">Manual Entry: </b>
+                <input id="manual" size="20" placeholder="Enter barcode here">
+            </div>
+            <div class="pt-2 mb-3">
+                <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
+                <a class="btn btn-primary btn-lg btn-block" id="new_recv_btn" href="#" onclick="new_room();">Connect to receiver</a>
+                <a class="btn btn-warning btn-lg btn-block" id="disconnect_btn" href="#" onclick="new_room();" hidden>Disconnect from receiver</a>
+                <a class="btn btn-secondary btn-lg btn-block" id="standalone_btn" href="#" onclick="setup_room(0);" hidden>Standalone Mode</a>
+                <a class="btn btn-warning btn-lg btn-block" href="#" onclick="barcodes = [];format_barcodes();">Clear</a>
+            </div>
+            <div class="mb-3">
+                <textarea id="barcodes" readonly cols="40" rows="20"></textarea>
+            </div>
         </div>
         <template id="tpl-alert">
             <div class="alert alert-dismissible fade show">

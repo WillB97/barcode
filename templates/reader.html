@@ -65,7 +65,6 @@
             }
             function clear_barcodes() {
                 barcodes = [];
-                $('#barcodes').val('');
                 format_barcodes();
             }
             function format_barcodes() {
@@ -89,7 +88,7 @@
         <h1>Barcode Receiver</h1>
         <div >
             <div class="mb-3">
-                <textarea id="barcodes" disabled cols="60" rows="20"></textarea>
+                <textarea id="barcodes" readonly cols="60" rows="20"></textarea>
             </div>
             <div class="mb-3" id="alerts"></div>
             <div>
