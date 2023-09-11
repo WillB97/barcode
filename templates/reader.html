@@ -9,6 +9,7 @@
         <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
         <script type="text/javascript" charset="utf-8">
             var socket;
+            var barcodes = [];
             $(document).ready(function(){
                 socket = io.connect();
 
@@ -35,7 +36,8 @@
                     }
                 });
                 socket.on('barcode', function(data) {
-                    $('#barcodes').val($('#barcodes').val() + data.barcode + $('input[name=separator]:checked').val());
+                    barcodes.push(data.barcode);
+                    format_barcodes();
                     $('#barcodes').scrollTop($('#barcodes')[0].scrollHeight);
                     clear_alerts();
                     raise_alert('alert-success', `<b>${data.barcode}</b>`);
@@ -43,9 +45,9 @@
                 $('#manual').keypress(function(e) {
                     var code = e.keyCode || e.which;
                     if (code == 13) {
-                        text = $('#manual').val();
-                        $('#barcodes').val($('#barcodes').val() + text + $('input[name=separator]:checked').val());
+                        barcodes.push($('#manual').val());
                         $('#manual').val('');
+                        format_barcodes();
                     }
                 });
             });
@@ -62,7 +64,12 @@
                 window.location.href = "{{ url_for('index') }}";
             }
             function clear_barcodes() {
+                barcodes = [];
                 $('#barcodes').val('');
+                format_barcodes();
+            }
+            function format_barcodes() {
+                $('#barcodes').val(barcodes.join($('input[name=separator]:checked').val()));
             }
             function clear_alerts() {
                 $('#alerts .alert').alert('close');
@@ -98,7 +105,7 @@
             <div class="pt-2">
                 <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
             </div>
-            <div class="pt-2">
+            <div class="pt-2" onchange="format_barcodes()">
                 <input type="radio" class="form-check-input" id="separator-nl" name="separator" value="
 ">
                 <label class="form-check-label" for="radio1">Newline</label>
