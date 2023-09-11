@@ -25,20 +25,20 @@
                 });
                 socket.on('devices', function(data) {
                     if (data.connected) {
-                        $('#alerts .alert').alert('close');
-                        $('#alerts').append('<div class="alert alert-info alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>New device connected</div>');
+                        clear_alerts();
+                        raise_alert('alert-info', 'A device connected');
                         console.log("New device connected");
                     } else {
-                        $('#alerts .alert').alert('close');
-                        $('#alerts').append('<div class="alert alert-warning alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>A device disconnected</div>');
+                        clear_alerts();
+                        raise_alert('alert-warning', 'A device disconnected');
                         console.log("A device disconnected");
                     }
                 });
                 socket.on('barcode', function(data) {
                     $('#barcodes').val($('#barcodes').val() + data.barcode + $('input[name=separator]:checked').val());
                     $('#barcodes').scrollTop($('#barcodes')[0].scrollHeight);
-                    $('#alerts .alert').alert('close');
-                    $('#alerts').append('<div class="alert alert-success alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button><b>' + data.barcode + '</b></div>');
+                    clear_alerts();
+                    raise_alert('alert-success', `<b>${data.barcode}</b>`);
                 });
                 $('#manual').keypress(function(e) {
                     var code = e.keyCode || e.which;
@@ -51,8 +51,8 @@
             });
             function copy_to_clipboard() {
                 navigator.clipboard.writeText($('#barcodes').val());
-                $('#alerts .alert').alert('close');
-                $('#alerts').append('<div class="alert alert-primary alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>Barcodes Copied</div>');
+                clear_alerts();
+                raise_alert('alert-primary', 'Barcodes Copied');
             }
             function leave_room() {
                 socket.emit('leave', {});
@@ -63,6 +63,18 @@
             }
             function clear_barcodes() {
                 $('#barcodes').val('');
+            }
+            function clear_alerts() {
+                $('#alerts .alert').alert('close');
+            }
+            function raise_alert(alert_type, content) {
+                const template = document.getElementById("tpl-alert");
+                let alertFragment = template.content.cloneNode(true);
+                alertEL = alertFragment.querySelector(".alert");
+                alertEL.classList.add(alert_type)
+                alertContent = alertFragment.querySelector(".alert-content");
+                alertContent.innerHTML = content;
+                $('#alerts').append(alertFragment);
             }
         </script>
     </head>
@@ -96,5 +108,11 @@
                 <label class="form-check-label" for="radio1">Comma</label>
             </div>
         </div>
+        <template id="tpl-alert">
+            <div class="alert alert-dismissible fade show">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <span class="alert-content"></span>
+            </div>
+        </template>
     </body>
 </html>
