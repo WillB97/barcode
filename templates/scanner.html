@@ -9,7 +9,8 @@
         <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
         <script type="text/javascript" charset="utf-8">
             var socket;
-            var roomId = undefined;
+            var barcodes = [];
+            var roomId = 0;
             var lastResult = 0;
 
             $(document).ready(function(){
@@ -26,7 +27,7 @@
                     var code = e.keyCode || e.which;
                     if (code == 13) {
                         const text = $('#manual').val();
-                        if(text.length == 0) {
+                        if(text.length != 0) {
                             send_barcode(text);
                         }
                         lastResult = text;
@@ -68,18 +69,23 @@
                 } else {
                     clear_alerts();
                     raise_alert('alert-success', 'Scanned: <b>' + barcode + '</b>');
+                    barcodes.push(barcode);
+                    format_barcodes();
                     if (roomId !== 0){
                         socket.emit('scan', {barcode: barcode});
                     }
                 }
             }
+            function format_barcodes() {
+                $('#barcodes').val(barcodes.join('\n'));
+            }
             function new_room() {
-                if ((roomId !== undefined) && (roomId !== 0)) {
+                if ((roomId !== undefined) && (roomId != 0)) {
                     socket.emit('leave', {});
                     socket.disconnect();  // A new socket will be created when we connect again
                 }
                 roomId = undefined;
-                $('#roomAddress').html('<div class="alert alert-warning">Device disconnected</div><h2>Enter Receiver ID</h2>');
+                $('#roomAddress').html('<h2>Enter Receiver ID</h2>');
                 $('#manual_label').text("Enter Receiver ID: ");
                 $('#manual').attr('placeholder', "Enter receiver ID");
                 lastResult = 0;
@@ -89,7 +95,7 @@
                 if (new_roomid === 0) {
                     $('#roomAddress').html("<b>Standalone Mode</b>");
                 } else {
-                    $('#roomAddress').html("<b>Connected to: " + roomId + "</b>");
+                    $('#roomAddress').html("<b>Connected to: " + new_roomid + "</b>");
                 }
                 $('#manual_label').text("Manual Entry: ");
                 $('#manual').attr('placeholder', "Enter barcode here");
@@ -114,8 +120,7 @@
     <body>
         <h1>Scanner</h1>
         <div id="roomAddress">
-            <div class="alert alert-warning">Device disconnected</div>
-            <h2>Enter Receiver ID</h2>
+            <b>Standalone Mode</b>
         </div>
         <div class="container-fluid">
             <div id="qr-reader" class="mb-3"></div>
@@ -124,12 +129,17 @@
         <div id="lastScanCode"></div>
         <div>
             <b id="manual_label">Manual Entry: </b>
-            <input id="manual" size="20" placeholder="Enter receiver ID">
+            <input id="manual" size="20" placeholder="Enter barcode here">
         </div>
-        <div class="pt-2">
+        <div class="pt-2 mb-3">
             <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
-            <a class="btn btn-warning btn-lg btn-block" href="#" onclick="new_room();">Connect to new receiver</a>
-            <a class="btn btn-secondary btn-lg btn-block" href="#" onclick="standalone_mode();">Standalone Mode</a>
+            <a class="btn btn-primary btn-lg btn-block" id="new_recv_btn" href="#" onclick="new_room();">Connect to receiver</a>
+            <a class="btn btn-warning btn-lg btn-block" id="disconnect_btn" href="#" onclick="new_room();" hidden>Disconnect from receiver</a>
+            <a class="btn btn-secondary btn-lg btn-block" id="standalone_btn" href="#" onclick="setup_room(0);" hidden>Standalone Mode</a>
+            <a class="btn btn-warning btn-lg btn-block" href="#" onclick="barcodes = [];format_barcodes();">Clear</a>
+        </div>
+        <div class="mb-3">
+            <textarea id="barcodes" readonly cols="40" rows="20"></textarea>
         </div>
         <template id="tpl-alert">
             <div class="alert alert-dismissible fade show">
