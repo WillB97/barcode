@@ -7,7 +7,7 @@ If you choose to use self-signed certificates the console will print an ssl.SSLE
 
 ## Installation
 
-Requires Python 3.8+.
+Requires Python 3.8/3.9.
 
 ```bash
 pip install -r requirements.txt
