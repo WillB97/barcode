@@ -63,29 +63,48 @@
             }
             function send_barcode(barcode) {
                 if (roomId === undefined) {
-                    roomId = barcode;
-                    $('#roomAddress').html("<b>Connected to: " + roomId + "</b>");
-                    $('#manual').attr('placeholder', "Enter barcode here");
+                    setup_room(barcode);
                     socket.emit('enter', {type: 'scanner', room: roomId});
-                } else if (roomId === 0) {
-                    $('#alerts .alert').alert('close');
-                    $('#alerts').append('<div class="alert alert-success alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>Scanned: <b>' + barcode + '</b></div>');
                 } else {
-                    $('#alerts .alert').alert('close');
-                    $('#alerts').append('<div class="alert alert-success alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert"></button>Scanned: <b>' + barcode + '</b></div>');
-                    socket.emit('scan', {barcode: barcode});
+                    clear_alerts();
+                    raise_alert('alert-success', 'Scanned: <b>' + barcode + '</b>');
+                    if (roomId !== 0){
+                        socket.emit('scan', {barcode: barcode});
+                    }
                 }
             }
             function new_room() {
+                if ((roomId !== undefined) && (roomId !== 0)) {
+                    socket.emit('leave', {});
+                    socket.disconnect();  // A new socket will be created when we connect again
+                }
                 roomId = undefined;
                 $('#roomAddress').html('<div class="alert alert-warning">Device disconnected</div><h2>Enter Receiver ID</h2>');
+                $('#manual_label').text("Enter Receiver ID: ");
                 $('#manual').attr('placeholder', "Enter receiver ID");
                 lastResult = 0;
             }
-            function standalone_mode() {
-                roomId = 0;
-                $('#roomAddress').html("<b>Standalone Mode</b>");
+            function setup_room(new_roomid) {
+                roomId = new_roomid;
+                if (new_roomid === 0) {
+                    $('#roomAddress').html("<b>Standalone Mode</b>");
+                } else {
+                    $('#roomAddress').html("<b>Connected to: " + roomId + "</b>");
+                }
+                $('#manual_label').text("Manual Entry: ");
                 $('#manual').attr('placeholder', "Enter barcode here");
+            }
+            function clear_alerts() {
+                $('#alerts .alert').alert('close');
+            }
+            function raise_alert(alert_type, content) {
+                const template = document.getElementById("tpl-alert");
+                let alertFragment = template.content.cloneNode(true);
+                alertEL = alertFragment.querySelector(".alert");
+                alertEL.classList.add(alert_type)
+                alertContent = alertFragment.querySelector(".alert-content");
+                alertContent.innerHTML = content;
+                $('#alerts').append(alertFragment);
             }
         </script>
         <audio id="scanBeep">
@@ -99,12 +118,12 @@
             <h2>Enter Receiver ID</h2>
         </div>
         <div class="container-fluid">
-            <div id="qr-reader"></div>
+            <div id="qr-reader" class="mb-3"></div>
         </div><br>
         <div id="alerts"></div>
         <div id="lastScanCode"></div>
         <div>
-            <b>Manual Entry: </b>
+            <b id="manual_label">Manual Entry: </b>
             <input id="manual" size="20" placeholder="Enter receiver ID">
         </div>
         <div class="pt-2">
@@ -112,5 +131,11 @@
             <a class="btn btn-warning btn-lg btn-block" href="#" onclick="new_room();">Connect to new receiver</a>
             <a class="btn btn-secondary btn-lg btn-block" href="#" onclick="standalone_mode();">Standalone Mode</a>
         </div>
+        <template id="tpl-alert">
+            <div class="alert alert-dismissible fade show">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <span class="alert-content"></span>
+            </div>
+        </template>
     </body>
 </html>
