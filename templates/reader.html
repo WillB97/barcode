@@ -88,10 +88,10 @@
     <body>
         <h1>Barcode Receiver</h1>
         <div >
-            <div>
-                <textarea id="barcodes" disabled cols="80" rows="20"></textarea>
-            </div><br>
-            <div id="alerts"></div><br>
+            <div class="mb-3">
+                <textarea id="barcodes" disabled cols="60" rows="20"></textarea>
+            </div>
+            <div class="mb-3" id="alerts"></div>
             <div>
                 <b>Manual Entry: </b>
                 <input id="manual" size="20" placeholder="Enter barcode here">
@@ -102,17 +102,17 @@
                 <a class="btn btn-primary btn-lg btn-block" href="#" onclick="copy_to_clipboard();">Copy</a>
                 <a class="btn btn-warning btn-lg btn-block" href="#" onclick="clear_barcodes();">Clear</a>
             </div>
-            <div class="pt-2">
-                <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
-            </div>
             <div class="pt-2" onchange="format_barcodes()">
+                <input type="radio" class="form-check-input" id="separator-sp" name="separator" value=" " checked>
+                <label class="form-check-label" for="radio1">Space</label>
                 <input type="radio" class="form-check-input" id="separator-nl" name="separator" value="
 ">
                 <label class="form-check-label" for="radio1">Newline</label>
-                <input type="radio" class="form-check-input" id="separator-sp" name="separator" value=" " checked>
-                <label class="form-check-label" for="radio1">Space</label>
                 <input type="radio" class="form-check-input" id="separator-com" name="separator" value=",">
                 <label class="form-check-label" for="radio1">Comma</label>
+            </div>
+            <div class="pt-2">
+                <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
             </div>
         </div>
         <template id="tpl-alert">
