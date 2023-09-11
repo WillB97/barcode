@@ -13,6 +13,8 @@
             var lastResult = 0;
 
             $(document).ready(function(){
+                const beep = $('#scanBeep')[0];
+                beep.volume = 0.25;  // Reduce the volume of the beep to 25%
                 socket = io.connect();
 
                 socket.on("disconnect", function() {
@@ -32,7 +34,7 @@
                 function onScanSuccess(decodedText, decodedResult) {
                     if (decodedText !== lastResult) {
                         lastResult = decodedText;
-                        $('#scanBeep')[0].play();
+                        beep.play();
 
                         send_barcode(decodedText);
                         $('#lastScanCode').text(`Last Scanned ${decodedText}`)
