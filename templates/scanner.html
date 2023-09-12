@@ -46,6 +46,15 @@
                     }
                 });
 
+                socket.on('barcode', function(data) {
+                    console.log(`Received barcode: ${data.barcode}, ${data.part}`);
+                    const template = document.getElementById("tpl-barcode");
+                    let barcodeFragment = template.content.cloneNode(true);
+                    barcodeFragment.querySelector(".barcode").innerHTML = data.barcode;
+                    barcodeFragment.querySelector(".part").innerHTML = data.part;
+                    $('#barcode_table_body').prepend(barcodeFragment);
+                });
+
                 $('#manual').keypress(function(e) {
                     var code = e.keyCode || e.which;
                     if (code == 13) {
@@ -107,6 +116,11 @@
             }
             function format_barcodes() {
                 $('#barcodes').val(barcodes.join('\n'));
+            }
+            function clear_barcodes() {
+                barcodes = [];
+                format_barcodes();
+                $('#barcode_table_body').empty();
             }
             function new_room() {
                 if ((roomId !== undefined) && (roomId != '0')) {
@@ -185,9 +199,19 @@
                 <a class="btn btn-primary btn-lg btn-block" id="new_recv_btn" href="#" onclick="new_room();">Connect to receiver</a>
                 <a class="btn btn-warning btn-lg btn-block" id="disconnect_btn" href="#" onclick="new_room();" style="display: none;">Disconnect from receiver</a>
                 <a class="btn btn-secondary btn-lg btn-block" id="standalone_btn" href="#" onclick="setup_room('0');" style="display: none;">Standalone Mode</a>
-                <a class="btn btn-warning btn-lg btn-block" href="#" onclick="barcodes = [];format_barcodes();">Clear</a>
+                <a class="btn btn-warning btn-lg btn-block" href="#" onclick="clear_barcodes();">Clear</a>
             </div>
             <div class="mb-3">
+                <table id="barcode_table" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Barcode</th>
+                            <th>Part</th>
+                        </tr>
+                    </thead>
+                    <tbody id="barcode_table_body">
+                    </tbody>
+                </table>
                 <textarea id="barcodes" readonly cols="40" rows="20"></textarea>
             </div>
         </div>
@@ -196,6 +220,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 <span class="alert-content"></span>
             </div>
+        </template>
+        <template id="tpl-barcode">
+            <tr>
+                <td class="barcode"></td>
+                <td class="part"></td>
+            </tr>
         </template>
     </body>
 </html>

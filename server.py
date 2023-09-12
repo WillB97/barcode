@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import csv
 import json
 import random
 
@@ -20,6 +21,7 @@ def load_config():
 
 
 CONFIG = load_config()
+INVENTORY_MAP = {}
 app = Flask(__name__)
 app.config['SECRET_KEY'] = CONFIG['SECRET_KEY']
 socketio = SocketIO(app)
@@ -77,7 +79,21 @@ def on_scan(message):
         return
     # basic sanitisation of barcode (only printable characters)
     barcode = sanitise_barcode(barcode)
-    emit('barcode', {'barcode': barcode}, to=room)
+    emit(
+        'barcode',
+        {
+            'barcode': barcode,
+            # look up barcode in database and return item info
+            "part": INVENTORY_MAP.get(barcode.upper(), ""),
+        }, to=room)
+    emit(  # respond to scanner with item info
+        'barcode',
+        {
+            'barcode': barcode,
+            # look up barcode in database and return item info
+            "part": INVENTORY_MAP.get(barcode.upper(), ""),
+        }
+    )
 
 
 @socketio.on('leave')
@@ -128,6 +144,19 @@ def sanitise_barcode(barcode):
             clean_barcode.append(c)
 
     return clean_barcode
+
+
+def generate_inventory_map(inventory):
+    if not os.path.isfile(inventory):
+        return {}
+
+    with open(inventory) as fp:
+        reader = csv.DictReader(fp)
+        return {row['assetcode']: row['item_name'] for row in reader}
+
+
+if CONFIG.get('inventory') is not None:
+    INVENTORY_MAP = generate_inventory_map(CONFIG['inventory'])
 
 
 if __name__ == '__main__':
