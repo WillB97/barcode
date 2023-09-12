@@ -46,7 +46,7 @@
                     }
                 });
 
-                socket.on('barcode', function(data) {
+                socket.on('barcode_response', function(data) {
                     console.log(`Received barcode: ${data.barcode}, ${data.part}`);
                     const template = document.getElementById("tpl-barcode");
                     let barcodeFragment = template.content.cloneNode(true);

@@ -87,7 +87,7 @@ def on_scan(message):
             "part": INVENTORY_MAP.get(barcode.upper(), ""),
         }, to=room)
     emit(  # respond to scanner with item info
-        'barcode',
+        'barcode_response',
         {
             'barcode': barcode,
             # look up barcode in database and return item info

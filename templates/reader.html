@@ -47,9 +47,10 @@
                 $('#manual').keypress(function(e) {
                     var code = e.keyCode || e.which;
                     if (code == 13) {
-                        barcodes.push($('#manual').val());
+                        socket.emit('scan', {barcode: $('#manual').val()});
                         $('#manual').val('');
-                        format_barcodes();
+                        // barcodes.push($('#manual').val());
+                        // format_barcodes();
                     }
                 });
             });
