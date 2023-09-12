@@ -8,19 +8,42 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
         <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
         <script type="text/javascript" charset="utf-8">
-            var socket;
+            var socket = io();
             var barcodes = [];
-            var roomId = 0;
+            var roomId = '0';  // 0 means standalone mode
             var lastResult = 0;
 
             $(document).ready(function(){
                 const beep = $('#scanBeep')[0];
                 beep.volume = 0.25;  // Reduce the volume of the beep to 25%
-                socket = io.connect();
+
+                // check if there is a room id in the cookie
+                // if there is, then load room id from the cookie
+                const roomId_cookie = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith("roomid="));
+                if (roomId_cookie !== undefined) {
+                    roomId = roomId_cookie.split("=")[1];
+                }
+
+                // don't open socket until we have a room id
+                if ((roomId !== '0') && (roomId !== undefined)) {
+                    socket.connect();
+                    $('#new_recv_btn').hide();
+                    $('#disconnect_btn').show();
+                    $('#standalone_btn').show();
+                }
 
                 socket.on("disconnect", function() {
-                    new_room();
-                    socket = io.connect();
+                    socket.connect();
+                });
+
+                // on socket connect, automatically join the cached room id
+                socket.on('connect', function() {
+                    if ((roomId !== undefined) && (roomId != '0')) {
+                        socket.emit('enter', {type: 'scanner', room: roomId});
+                        setup_room(roomId);
+                    }
                 });
 
                 $('#manual').keypress(function(e) {
@@ -59,13 +82,19 @@
             });
             function leave_room() {
                 socket.disconnect();
+                clear_roomId();  // remove the room id from the cookie
                 // go back to the selection page
                 window.location.href = "{{ url_for('index') }}";
             }
             function send_barcode(barcode) {
                 if (roomId === undefined) {
                     setup_room(barcode);
-                    socket.emit('enter', {type: 'scanner', room: roomId});
+                    // if the socket is not open, open it, else just send the barcode
+                    if (!socket.connected) {
+                        socket.connect();
+                    } else {
+                        socket.emit('enter', {type: 'scanner', room: roomId});
+                    }
                 } else {
                     clear_alerts();
                     raise_alert('alert-success', 'Scanned: <b>' + barcode + '</b>');
@@ -80,10 +109,14 @@
                 $('#barcodes').val(barcodes.join('\n'));
             }
             function new_room() {
-                if ((roomId !== undefined) && (roomId != 0)) {
+                if ((roomId !== undefined) && (roomId != '0')) {
                     socket.emit('leave', {});
                     socket.disconnect();  // A new socket will be created when we connect again
+                    clear_roomId();  // remove the room id from the cookie
                 }
+                $('#new_recv_btn').show().addClass('disabled');
+                $('#disconnect_btn').hide();
+                $('#standalone_btn').show();
                 roomId = undefined;
                 $('#roomAddress').html('<h2>Enter Receiver ID</h2>');
                 $('#manual_label').text("Enter Receiver ID: ");
@@ -92,10 +125,17 @@
             }
             function setup_room(new_roomid) {
                 roomId = new_roomid;
-                if (new_roomid === 0) {
+                save_roomId(new_roomid);  // store the room id in a cookie
+                if (new_roomid === '0') {
                     $('#roomAddress').html("<b>Standalone Mode</b>");
+                    $('#new_recv_btn').show().removeClass('disabled');
+                    $('#disconnect_btn').hide();
+                    $('#standalone_btn').hide();
                 } else {
                     $('#roomAddress').html("<b>Connected to: " + new_roomid + "</b>");
+                    $('#new_recv_btn').hide();
+                    $('#disconnect_btn').show();
+                    $('#standalone_btn').show();
                 }
                 $('#manual_label').text("Manual Entry: ");
                 $('#manual').attr('placeholder', "Enter barcode here");
@@ -112,7 +152,17 @@
                 alertContent.innerHTML = content;
                 $('#alerts').append(alertFragment);
             }
-        </script>
+            function save_roomId(new_roomid) {
+                const d = new Date();
+                // 12 hours in the future
+                d.setTime(d.getTime() + (12*60*60*1000));
+                const expires = "expires="+ d.toUTCString();
+                document.cookie = "roomid=" + new_roomid + ";" + expires + ";path=/";
+            }
+            function clear_roomId() {
+                document.cookie = "roomid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            }
+       </script>
         <audio id="scanBeep">
             <source src="https://www.soundjay.com/buttons/button-1.mp3" type="audio/mpeg">
         </audio>
@@ -133,8 +183,8 @@
             <div class="pt-2 mb-3">
                 <a class="btn btn-danger btn-lg btn-block" href="#" onclick="leave_room();">Start Again</a>
                 <a class="btn btn-primary btn-lg btn-block" id="new_recv_btn" href="#" onclick="new_room();">Connect to receiver</a>
-                <a class="btn btn-warning btn-lg btn-block" id="disconnect_btn" href="#" onclick="new_room();" hidden>Disconnect from receiver</a>
-                <a class="btn btn-secondary btn-lg btn-block" id="standalone_btn" href="#" onclick="setup_room(0);" hidden>Standalone Mode</a>
+                <a class="btn btn-warning btn-lg btn-block" id="disconnect_btn" href="#" onclick="new_room();" style="display: none;">Disconnect from receiver</a>
+                <a class="btn btn-secondary btn-lg btn-block" id="standalone_btn" href="#" onclick="setup_room('0');" style="display: none;">Standalone Mode</a>
                 <a class="btn btn-warning btn-lg btn-block" href="#" onclick="barcodes = [];format_barcodes();">Clear</a>
             </div>
             <div class="mb-3">
