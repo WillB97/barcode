@@ -48,11 +48,7 @@
 
                 socket.on('barcode_response', function(data) {
                     console.log(`Received barcode: ${data.barcode}, ${data.part}`);
-                    const template = document.getElementById("tpl-barcode");
-                    let barcodeFragment = template.content.cloneNode(true);
-                    barcodeFragment.querySelector(".barcode").innerHTML = data.barcode;
-                    barcodeFragment.querySelector(".part").innerHTML = data.part;
-                    $('#barcode_table_body').prepend(barcodeFragment);
+                    add_barcode(data.barcode, data.part);
                 });
 
                 $('#manual').keypress(function(e) {
@@ -111,6 +107,8 @@
                     format_barcodes();
                     if (roomId !== 0){
                         socket.emit('scan', {barcode: barcode});
+                    } else {
+                        add_barcode(barcode, '');
                     }
                 }
             }
@@ -175,6 +173,13 @@
             }
             function clear_roomId() {
                 document.cookie = "roomid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            }
+            function add_barcode(barcode, part) {
+                const template = document.getElementById("tpl-barcode");
+                let barcodeFragment = template.content.cloneNode(true);
+                barcodeFragment.querySelector(".barcode").innerHTML = barcode;
+                barcodeFragment.querySelector(".part").innerHTML = part;
+                $('#barcode_table_body').prepend(barcodeFragment);
             }
        </script>
         <audio id="scanBeep">
