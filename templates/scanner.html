@@ -105,7 +105,7 @@
                     raise_alert('alert-success', 'Scanned: <b>' + barcode + '</b>');
                     barcodes.push(barcode);
                     format_barcodes();
-                    if (roomId !== 0){
+                    if (roomId !== '0'){
                         socket.emit('scan', {barcode: barcode});
                     } else {
                         add_barcode(barcode, '');
